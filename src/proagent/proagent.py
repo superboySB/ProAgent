@@ -133,7 +133,7 @@ class ProMediumLevelAgent(ProAgent):
 			if file_type == 'json':
 				messages = json.load(f)
 			elif file_type == 'txt':
-				messages = [{"role": "system", "content": f.read()}]
+				messages = [{"role": "user", "content": f.read()}]
 			else:
 				print("Unsupported file format.")
 		

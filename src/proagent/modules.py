@@ -1,4 +1,5 @@
-import openai
+# import openai
+from openai import OpenAI
 from rich import print as rprint
 import time
 from typing import Union
@@ -6,14 +7,8 @@ from .utils import convert_messages_to_prompt, retry_with_exponential_backoff
 
 # Refer to https://platform.openai.com/docs/models/overview
 TOKEN_LIMIT_TABLE = {
-    "text-davinci-003": 4080,
     "gpt-3.5-turbo": 4096,
-    "gpt-3.5-turbo-0301": 4096,
-    "gpt-3.5-turbo-16k": 16384,
-    "gpt-4": 8192,
-    "gpt-4-0314": 8192,
-    "gpt-4-32k": 32768,
-    "gpt-4-32k-0314": 32768,
+    "gpt-4-turbo": 8192
 }
 
 
@@ -66,7 +61,11 @@ class Module(object):
     
     @retry_with_exponential_backoff
     def query(self, key, stop=None, temperature=0.0, debug_mode = 'Y', trace = True):
-        openai.api_key = key 
+        # openai.api_key = key 
+        # openai.proxy = "https://api.openai-proxy.org/v1" # TODO: for close-ai
+        client = OpenAI(base_url='https://api.openai-proxy.org/v1',
+            api_key="sk-JcxNjZLE13mke1O6eCw4ZpDlwJrM2Dt9CU2k8WqX8YKGtvhZ")
+        
         rec = self.K  
         if trace == True: 
             self.K = 0 
@@ -85,23 +84,20 @@ class Module(object):
                 rprint("[red][ERROR][/red]: Query GPT failed for over 3 times!")
                 return {}
             try:  
-                if self.model in ['text-davinci-003']:
-                    prompt = convert_messages_to_prompt(messages) 
-                    response = openai.Completion.create(
+                if 'gpt' in self.model:
+                    # response = openai.ChatCompletion.create(
+                    #     model=self.model,
+                    #     messages=messages,
+                    #     stop=stop,
+                    #     temperature=temperature, 
+                    #     max_tokens = 256
+                    # )
+                    response = client.chat.completions.create(
                         model=self.model,
-                        prompt=prompt,
-                        stop=stop,
-                        temperature=temperature, 
-                        max_tokens = 256
-                    )
-                    time.sleep(10)  
-                elif 'gpt' in self.model:
-                    response = openai.ChatCompletion.create(
-                        model=self.model,
-                        messages=messages,
-                        stop=stop,
-                        temperature=temperature, 
-                        max_tokens = 256
+                        # response_format={ "type": "json_object" },
+                        seed=0,  # beta
+                        temperature=0,
+                        messages=messages
                     )
                     time.sleep(10) 
                 else:
@@ -120,8 +116,9 @@ class Module(object):
             return response 
         elif self.model in ['text-davinci-003']:
             return response["choices"][0]["text"]
-        elif self.model in ['gpt-3.5-turbo-16k', 'gpt-3.5-turbo-0301', 'gpt-3.5-turbo', 'gpt-4', 'gpt-4-0314']:
-            return response["choices"][0]["message"]["content"]
+        elif self.model in ['gpt-3.5-turbo', 'gpt-4-turbo']:
+            # return response["choices"][0]["message"]["content"]
+            return response.choices[0].message.content
 
     def restrict_dialogue(self):
         """

@@ -24,7 +24,7 @@ It is useful to setup a conda environment with Python 3.7 (python3.8 not support
     pip install -e .
 
     
-    cd ./lib/stable_baselines
+    cd ./lib/stable-baselines
     pip install -e .
     ```
     Notes 1: Overcooked-AI is a benchmark environment for fully cooperative human-AI task performance, based on the wildly popular video game Overcooked. https://github.com/HumanCompatibleAI/overcooked_ai.
@@ -53,6 +53,7 @@ It is useful to setup a conda environment with Python 3.7 (python3.8 not support
 - Run `./src/main.py`. For example
 
     ```
+    cd src
     python main.py --layout cramped_room --p0 Greedy --p1 Greedy --horizon 20
     python main.py --layout coordination_ring --p0 ProAgent --p1 Greedy
     ```
